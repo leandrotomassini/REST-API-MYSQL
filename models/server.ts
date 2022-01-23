@@ -1,6 +1,7 @@
-import express, { Application } from  'express';
+import express, { Application } from 'express';
 import userRoutes from '../routes/usuario';
 import cors from 'cors';
+import db from '../db/connection';
 
 class Server {
 
@@ -11,18 +12,27 @@ class Server {
         usuarios: '/api/usuarios'
     }
 
-    constructor(){
+    constructor() {
         this.app = express();
-        this.port = process.env.PORT || '8000'; 
+        this.port = process.env.PORT || '8000';
 
         // Métodos iniciales
+        this.dbConnection();
         this.middlewares();
         this.routes();
     }
 
-    // TODO: Conectar base de datos
+    async dbConnection() {
+        try {
+            await db.authenticate();
+            console.log('Database online');
 
-    middlewares(){
+        } catch (error) {
+            throw new Error('Error al conectar db');
+        }
+    }
+
+    middlewares() {
 
         // CORS
         this.app.use(cors());
@@ -34,12 +44,12 @@ class Server {
         this.app.use(express.static('public'));
     }
 
-    routes(){
+    routes() {
         this.app.use(this.apiPaths.usuarios, userRoutes);
     }
 
-    listen(){
-        this.app.listen(this.port, ()=>{
+    listen() {
+        this.app.listen(this.port, () => {
             console.log(`Servidor corriendo en puerto ${this.port}`);
         });
     }
